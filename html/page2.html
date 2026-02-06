@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Men</title>
+  <link rel="stylesheet" href="../style/style.css">
+  <link rel="icon" href="../photobooth/сердце.png" type="image/x-icon">
+</head>
+<body class="page2">
+
+  <!-- stars layer -->
+  <div class="stars" id="stars"></div>
+
+  <!-- central panel -->
+  <div class="panel" role="main" aria-labelledby="headline">
+    <h2 id="headline">Ой — мені тандапсынғой! 🎉</h2>
+    <p class="lead">Тандау өзінде, қайсысын көргін келеді — фотобудка, хат немесе сыйлық.</p>
+
+    <div class="choices" id="choices">
+      <div class="card" data-choice="photobooth" tabindex="0" role="button" aria-label="Фотобудка">
+        <lottie-player
+            src="../animation/couple-taking-photo.json"
+            background="transparent"
+            speed="1"
+            loop
+            autoplay
+            style="width:180px;height:180px">
+        </lottie-player>
+        <h3>Фотобудка</h3>
+        <p>Біздін естелік суреттеріміз — күлімде :)</p>
+      </div>
+
+      <div class="card" data-choice="letter" tabindex="0" role="button" aria-label="Письмо">
+        <lottie-player
+            src="../animation/love-message.json"
+            background="transparent"
+            speed="1"
+            loop
+            autoplay
+            style="width:180px;height:180px">
+        </lottie-player>
+
+        <h3>Хат</h3>
+        <p>Кішігірем хат — шын жүректен.</p>
+      </div>
+
+      <div class="card" data-choice="gift" tabindex="0" role="button" aria-label="Подарок">
+        <lottie-player
+            src="../animation/wrapped-gift.json"
+            background="transparent"
+            speed="1"
+            loop
+            autoplay
+            style="width:180px;height:180px">
+        </lottie-player>
+        <h3>Сыйлық</h3>
+        <p>Кішігірім тосын сый — бас, сол кезде ашылады.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- background music for page2 -->
+  <audio id="page2Music" loop preload="auto">
+    <source src="../music/ALEM - MAHABBAT.mp3" type="audio/mpeg">
+  </audio>
+
+  <script src="../js/page2.js"></script>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+
+</body>
+</html>

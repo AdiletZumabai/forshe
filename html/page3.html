@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../photobooth/сердце.png" type="image/x-icon">
+<title>seni</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:#0b0b0f;
+  color:#fff;
+  font-family:system-ui, sans-serif;
+  overflow:hidden;
+}
+
+/* layout */
+.wrapper{
+  display:flex;
+  height:100vh;
+}
+
+/* LEFT TEXT */
+.left{
+  width:35%;
+  padding:60px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.left h1{font-size:42px;margin:0 0 12px}
+.left p{opacity:.8;font-size:18px}
+
+/* RIGHT GALLERY */
+.right{
+  width:65%;
+  overflow:hidden;
+  position:relative;
+}
+
+.scroller{
+  position:absolute;
+  width:100%;
+  will-change:transform;
+}
+
+.masonry{
+  column-count:3;
+  column-gap:16px;
+  padding:20px;
+}
+
+@media(max-width:1000px){
+  .left{display:none}
+  .right{width:100%}
+  .masonry{column-count:2}
+}
+
+.card{
+  break-inside:avoid;
+  margin-bottom:16px;
+  border-radius:14px;
+  overflow:hidden;
+  cursor:pointer;
+  transform:translateZ(0);
+  transition:transform .25s;
+}
+
+.card:hover{
+  transform:scale(1.04);
+}
+
+.media{
+  width:100%;
+  display:block;
+  object-fit:cover;
+}
+
+/* MODAL */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.8);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+  transition:.2s;
+  z-index:999;
+}
+.modal.open{
+  opacity:1;
+  pointer-events:auto;
+}
+.modal video,
+.modal img{
+  max-width:90vw;
+  max-height:90vh;
+  border-radius:12px;
+}
+.close{
+  position:absolute;
+  top:20px;
+  right:30px;
+  font-size:28px;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+  <div class="left">
+    <h1>Фотобудка 💖</h1>
+    <p>Біздің шексіз қозғалатын фотосуреттеріміз бен видеоларымыз.<br>Біреуін бас — сол сәтті елестету үшін.</p>
+  </div>
+
+  <div class="right">
+    <div class="scroller" id="scroller">
+      <div class="masonry" id="masonry"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="close" onclick="closeModal()">✕</div>
+  <div id="modalInner"></div>
+</div>
+
+
+
+<script>
+
+
+  const items = [
+  {type:'image', src:'../photobooth/photo_5204178123166448204_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5204178123166448206_y.jpg'},
+  {type:'video', src:'../photobooth/document_5253526412177991481.mp4'},
+  {type:'image', src:'../photobooth/photo_5206562018994287652_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_0019.MOV'},
+  {type:'image', src:'../photobooth/photo_5211076076867022822_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5215400645077627768_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_0288.MOV'},
+  {type:'image', src:'../photobooth/photo_5220030808805020009_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_0401.MOV'},
+  {type:'image', src:'../photobooth/photo_5220030808805020012_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5220030808805020027_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_1033.MOV'},
+  {type:'image', src:'../photobooth/photo_5230969935885365384_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_1472.MOV'},
+  {type:'image', src:'../photobooth/photo_5231191955629797549_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5242494552911243745_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_1646.MOV'},
+  {type:'image', src:'../photobooth/photo_5244747855967227349_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_1686.MOV'},
+  {type:'image', src:'../photobooth/photo_5244916944534704475_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5244916944534704477_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_1688.MOV'},
+  {type:'image', src:'../photobooth/photo_5249422872030600447_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_1804.mp4'},
+  {type:'image', src:'../photobooth/photo_5253526412634222123_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5269384368193921298_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_2039.MOV'},
+  {type:'image', src:'../photobooth/photo_5274032300197279090_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_3613.MOV'},
+  {type:'image', src:'../photobooth/photo_5274032300197279093_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5280731753394335967_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_4370.MOV'},
+  {type:'image', src:'../photobooth/photo_5305735158911066386_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_6193.MOV'},
+  {type:'image', src:'../photobooth/photo_5307710294111413439_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5314357198383610316_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_6194.MOV'},
+  {type:'image', src:'../photobooth/photo_5318869392240536374_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_6279.MOV'},
+  {type:'image', src:'../photobooth/photo_5321529394335965958_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5332319288486395497_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_6283.MOV'},
+  {type:'image', src:'../photobooth/photo_5334823915844925821_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_6907.MOV'},
+  {type:'image', src:'../photobooth/photo_5359572458002317251_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5359572458002317257_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_7335.MOV'},
+  {type:'image', src:'../photobooth/photo_5366564969702879738_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_7564.MOV'},
+  {type:'image', src:'../photobooth/photo_5372835944077583567_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5373011071369083885_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_8707.MOV'},
+  {type:'image', src:'../photobooth/photo_5373011071369083886_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_8881.MOV'},
+  {type:'image', src:'../photobooth/photo_5373011071369083887_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5413469268160411578_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_9327.MOV'},
+  {type:'image', src:'../photobooth/photo_5424771796722381331_y.jpg'},
+  {type:'video', src:'../photobooth/IMG_9328.MOV'},
+  {type:'image', src:'../photobooth/photo_5424771796722381658_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5433939730833205647_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5433939730833205649_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5438352590686515070_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5449564688712069240_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5451684624439834029_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5451684624439834031_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5474516666290397530_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5474516666290397535_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5474516666290397560_y.jpg'},
+  {type:'image', src:'../photobooth/photo_5474516666290397563_y.jpg'},
+  {type:'video', src:'../photobooth/animation.mp4'},
+];
+
+
+
+
+
+
+
+const masonry = document.getElementById('masonry');
+const scroller = document.getElementById('scroller');
+
+items.concat(items).forEach(item=>{
+  const card = document.createElement('div');
+  card.className='card';
+
+  if(item.type==='image'){
+    const img=document.createElement('img');
+    img.src=item.src;
+    img.className='media';
+    card.appendChild(img);
+  } else {
+    const v=document.createElement('video');
+    v.src=item.src;
+    v.muted=true;
+    v.autoplay=true;
+    v.loop=true;
+    v.playsInline=true;
+    v.className='media';
+
+    // pause when out of view
+    const io=new IntersectionObserver(e=>{
+      e[0].isIntersecting ? v.play() : v.pause();
+    },{threshold:.2});
+    io.observe(v);
+
+    card.appendChild(v);
+  }
+
+  card.onclick=()=>openModal(item);
+  masonry.appendChild(card);
+});
+
+/* infinite scroll */
+let y = 0;
+let speed = 0.25;
+let autoScroll = true;
+
+let isDragging = false;
+let startY = 0;
+let startScroll = 0;
+let velocity = 0;
+let lastMoveTime = 0;
+let wheelTimeout = null; // timeout for re-enabling autoScroll after wheel
+
+function animate(){
+  if(autoScroll && !isDragging){
+    y += speed;
+  } else if(!isDragging){
+    // инерция
+    y += velocity;
+    velocity *= 0.95;
+  }
+
+  const h = masonry.offsetHeight / 2;
+  if(y > h) y = 0;
+  if(y < 0) y = h;
+
+  scroller.style.transform = `translateY(${-y}px)`;
+  requestAnimationFrame(animate);
+}
+animate();
+
+
+/* MODAL */
+const modal=document.getElementById('modal');
+const modalInner=document.getElementById('modalInner');
+
+function openModal(item){
+  modalInner.innerHTML='';
+  if(item.type==='image'){
+    const img=document.createElement('img');
+    img.src=item.src;
+    modalInner.appendChild(img);
+  } else {
+    const v=document.createElement('video');
+    v.src=item.src;
+    v.controls=true;
+    v.autoplay=true;
+    v.loop=true;
+    v.muted=false;
+    modalInner.appendChild(v);
+    v.play();
+  }
+  modal.classList.add('open');
+}
+
+function closeModal(){
+  modal.classList.remove('open');
+  modalInner.innerHTML='';
+}
+
+
+const area = document.querySelector('.right');
+
+area.addEventListener('mousedown', startDrag);
+area.addEventListener('touchstart', startDrag, {passive:false});
+
+window.addEventListener('mousemove', onDrag);
+window.addEventListener('touchmove', onDrag, {passive:false});
+
+window.addEventListener('mouseup', endDrag);
+window.addEventListener('touchend', endDrag);
+
+// wheel / touchpad scrolling (two-finger on laptop touchpad)
+area.addEventListener('wheel', onWheel, {passive:false});
+
+function onWheel(e){
+  // prevent page from trying to scroll elsewhere
+  e.preventDefault();
+  // treat wheel like a scroll gesture: increase y when scrolling down
+  autoScroll = false;
+  isDragging = false; // cancel drag state if any
+
+  const delta = e.deltaY; // positive when user scrolls down
+  // apply to position and give a bit of inertia
+  y += delta;
+  velocity = delta * 0.02;
+
+  // re-enable autoScroll after short pause of user input
+  clearTimeout(wheelTimeout);
+  wheelTimeout = setTimeout(()=> autoScroll = true, 1500);
+}
+
+function startDrag(e){
+  isDragging = true;
+  autoScroll = false;
+  startY = e.touches ? e.touches[0].clientY : e.clientY;
+  startScroll = y;
+  velocity = 0;
+  lastMoveTime = performance.now();
+}
+
+function onDrag(e){
+  if(!isDragging) return;
+  e.preventDefault();
+
+  const currentY = e.touches ? e.touches[0].clientY : e.clientY;
+  const delta = startY - currentY;
+
+  const now = performance.now();
+  velocity = (delta - (y - startScroll)) / (now - lastMoveTime);
+  lastMoveTime = now;
+
+  y = startScroll + delta;
+}
+
+function endDrag(){
+  if(!isDragging) return;
+  isDragging = false;
+
+  // вернуть автоскролл через паузу
+  setTimeout(()=> autoScroll = true, 1500);
+}
+
+</script>
+
+</body>
+</html>

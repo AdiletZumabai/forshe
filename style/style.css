@@ -1,0 +1,204 @@
+/* style.css - общий стиль для Page2 и Page3 */
+:root{
+  --red-deep:#7a001c;
+  --red-mid:#d61a46;
+  --panel-bg: rgba(255,255,255,0.06);
+  --text-soft: #ffd8e1;
+  --glass: rgba(255,255,255,0.03);
+  --white: #ffffff;
+  --muted: rgba(255,255,255,0.7);
+  --container-w: 980px;
+  --radius: 16px;
+  --card-w: 260px;
+}
+
+/* reset */
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;color:var(--white);}
+
+/* PAGE2 background (red + stars) */
+.page2 {
+  min-height:100vh;
+  background:
+    radial-gradient(1200px 800px at 10% 10%, rgba(255,59,132,0.06), transparent),
+    linear-gradient(180deg, var(--red-deep), var(--red-mid));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:36px;
+  position:relative;
+  overflow:hidden;
+}
+
+/* stars layer */
+/* stars layer */
+.stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  overflow: hidden;
+}
+
+.star {
+  position: absolute;
+  background: rgba(255,255,255,0.95);
+  border-radius: 50%;
+  filter: blur(0.6px);
+  opacity: 0.9;
+  animation:
+    starMove linear infinite,
+    starTwinkle ease-in-out infinite;
+}
+
+/* движение звёзд вверх */
+@keyframes starMove {
+  from {
+    transform: translateY(110vh);
+  }
+  to {
+    transform: translateY(-130vh);
+  }
+}
+
+/* мерцание */
+@keyframes starTwinkle {
+  0%   { opacity: 0.2; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+
+/* central panel */
+.panel {
+  position:relative;
+  z-index:10;
+  width:100%;
+  max-width:var(--container-w);
+  padding:28px;
+  border-radius:var(--radius);
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  box-shadow: 0 30px 80px rgba(0,0,0,0.35);
+  backdrop-filter: blur(6px) saturate(1.1);
+  color:var(--white);
+}
+
+/* headline */
+.panel h2{margin:0 0 6px;font-size:28px;}
+.panel p.lead{margin:0;color:var(--text-soft)}
+
+/* choices grid */
+.choices { display:flex; gap:18px; justify-content:center; margin-top:18px; flex-wrap:wrap; }
+.card {
+  width:var(--card-w);
+  min-height:320px;
+  background: var(--panel-bg);
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.06);
+  padding:12px;
+  cursor:pointer;
+  transition: transform .28s cubic-bezier(.2,.9,.2,1), box-shadow .18s ease;
+  display:flex; flex-direction:column; align-items:center; gap:12px;
+  color:var(--white);
+}
+.card:hover{ transform: translateY(-10px) scale(1.02); box-shadow: 0 18px 40px rgba(0,0,0,0.45); }
+.card img{ width:100%; height:180px; object-fit:cover; border-radius:10px; display:block; }
+
+/* sound toggle */
+.sound-toggle { position:absolute; top:16px; right:18px; z-index:30; background: rgba(0,0,0,0.28); color:#fff; border:0; padding:8px 12px; border-radius:10px; cursor:pointer; }
+
+/* PAGE3 overlay */
+.page3 {
+  position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:36px; z-index:60;
+  background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.55));
+}
+.page3 .box {
+  width:100%; max-width:860px; background:#fff; color:#222; padding:22px; border-radius:14px; box-shadow:0 20px 60px rgba(0,0,0,0.45);
+}
+.page3 .box img{ width:100%; height:auto; border-radius:10px; display:block; margin-bottom:12px; }
+.page3 h2{ margin-top:0; color:#222; }
+
+/* responsive */
+@media (max-width:920px){
+  .panel{ padding:18px }
+  .card{ width:46%; }
+}
+@media (max-width:640px){
+  .card{ width:100%; }
+  .panel h2{ font-size:20px;}
+  .panel{ padding:14px }
+}
+
+/* Стили для бабочек */
+.butterflies {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.butterfly {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  transform-style: preserve-3d;
+  animation: move-butterfly 15s infinite linear;
+}
+
+.butterfly__wing {
+  position: absolute;
+  width: 15px;
+  height: 25px;
+  background-color: #ffeb3b; /* Цвет крыльев */
+  border-radius: 50% 50% 0 50%;
+  opacity: 0.8;
+}
+
+.butterfly__wing--left {
+  left: 0;
+  transform-origin: right center;
+  animation: wing-left 0.4s infinite ease-in-out;
+}
+
+.butterfly__wing--right {
+  right: 0;
+  transform-origin: left center;
+  border-radius: 50% 50% 50% 0;
+  animation: wing-right 0.4s infinite ease-in-out;
+}
+
+.butterfly__body {
+  position: absolute;
+  top: 5px;
+  left: 14px;
+  width: 2px;
+  height: 15px;
+  background: #333;
+  border-radius: 5px;
+}
+
+/* Разное положение и задержка для бабочек */
+.butterfly--1 { top: 20%; left: 10%; animation-duration: 20s; }
+.butterfly--2 { top: 50%; left: 80%; animation-duration: 25s; animation-delay: -5s; }
+.butterfly--3 { top: 70%; left: 30%; animation-duration: 18s; animation-delay: -2s; }
+
+/* Анимации */
+@keyframes wing-left {
+  0%, 100% { transform: rotateY(0deg); }
+  50% { transform: rotateY(-70deg); }
+}
+
+@keyframes wing-right {
+  0%, 100% { transform: rotateY(0deg); }
+  50% { transform: rotateY(70deg); }
+}
+
+@keyframes move-butterfly {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(100px, -50px) rotate(20deg); }
+  50% { transform: translate(200px, 50px) rotate(-20deg); }
+  75% { transform: translate(-50px, 100px) rotate(10deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}

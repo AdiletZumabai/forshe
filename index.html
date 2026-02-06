@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Zhanym</title>
+<link rel="icon" href="../photobooth/сердце.png" type="image/x-icon">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg-start:#fff0f6;
+    --bg-end:#fff6fb;
+    --accent:#ff3b84;
+    --muted:#6b6b6b;
+    --card: rgba(255,255,255,0.92);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;
+    min-height:100vh;
+    background: linear-gradient(180deg,var(--bg-start),var(--bg-end));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    overflow:hidden;
+  }
+
+  /* ---------- hearts as SVG elements container ---------- */
+  .hearts {
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    overflow:hidden;
+    z-index:1;
+  }
+  .sheart {
+    position:absolute;
+    width:64px;
+    height:64px;
+    transform-origin:center;
+    opacity:0.95;
+    will-change: transform, opacity;
+    filter: drop-shadow(0 12px 24px rgba(255,59,132,0.12));
+  }
+  @keyframes heartFloat {
+    0% { transform: translateY(40vh) scale(.9) rotate(-10deg); opacity:0; }
+    8% { opacity:1; }
+    100% { transform: translateY(-140vh) scale(1.15) rotate(-10deg); opacity:0; }
+  }
+
+  /* ---------- main card ---------- */
+  .wrap{
+    position:relative;
+    width:100%;
+    max-width:760px;
+    background:var(--card);
+    border-radius:20px;
+    box-shadow:0 22px 60px rgba(0,0,0,0.08);
+    padding:28px;
+    text-align:center;
+    z-index:10;
+    backdrop-filter: blur(6px);
+  }
+  h1{margin:0 0 8px;font-size:28px}
+  p.lead{color:var(--muted);margin:0 0 18px}
+
+  .center{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:22px;
+    flex-direction:column;
+    padding:10px 0 18px;
+  }
+
+  .teddy{
+    width:240px;
+    height:240px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:22px;
+    background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.8), rgba(255,255,255,0.03));
+    box-shadow:0 12px 36px rgba(0,0,0,0.06);
+    transform-origin:center;
+    animation: teddyBounce 3000ms ease-in-out infinite;
+  }
+  @keyframes teddyBounce{
+    0% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-10px) scale(1.03); }
+    100% { transform: translateY(0) scale(1); }
+  }
+
+  /* ---------- buttons ---------- */
+  .buttons{ display:flex; gap:12px; justify-content:center; margin-top:14px; align-items:center; }
+  button{
+    padding:12px 20px;
+    border-radius:12px;
+    font-weight:700;
+    border:0;
+    cursor:pointer;
+    font-size:16px;
+    transition: transform .12s ease, box-shadow .12s ease;
+    user-select:none;
+    position:relative;
+    z-index:12;
+  }
+  .yes{
+    background: linear-gradient(90deg,var(--accent),#ff78b4);
+    color:#fff;
+    box-shadow:0 14px 36px rgba(255,59,132,0.18);
+  }
+  .no{
+    background:#fff;
+    border:2px solid rgba(0,0,0,0.06);
+    color:#333;
+    will-change: transform;
+    /* we'll move it by JS using transform; initial transition kept short */
+    transition: transform 120ms cubic-bezier(.2,.9,.2,1);
+  }
+
+  footer{margin-top:12px;color:var(--muted);font-size:13px}
+
+  /* second page */
+  .page-2{ display:none; padding:22px; text-align:center; }
+  .show-page-2 .wrap{ display:none; }
+  .show-page-2 .page-2{ display:block; z-index:11; position:relative; }
+
+  @media (max-width:520px){
+    .teddy{ width:180px; height:180px }
+    h1{ font-size:22px }
+  }
+</style>
+</head>
+<script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.8.11/dist/dotlottie-wc.js" type="module"></script>
+<body>
+
+  <div class="hearts" id="hearts"></div>
+
+  <div class="wrap" id="mainWrap" role="main" aria-labelledby="mainTitle">
+    <h1 id="mainTitle">Sälem, <span id="name">Zhanym</span> 💌</h1>
+
+
+    <div class="center">
+      <div class="teddy" id="teddy">
+        <dotlottie-wc 
+            src="https://lottie.host/1ca60dd4-c57b-40ca-a62b-62870bd178fa/TcunWE3w7E.lottie" 
+            style="width: 220px; height: 220px" 
+            autoplay 
+            loop>
+        </dotlottie-wc>
+      </div>
+
+
+      <div style="max-width:520px;">
+        <h2 style="margin:10px 0 0;font-size:20px">Менің Валентикам болуға келісесінбе?</h2>
+        <div class="buttons" id="btns">
+          <button class="yes" id="btnYes">Иәә, әрине 💖</button>
+          <button class="no" id="btnNo" aria-hidden="false">Жоқ, қаламаймын</button>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+
+  <div class="page-2" id="page2">
+    <div style="max-width:760px;margin:0 auto;background:rgba(255,255,255,0.95);padding:24px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.06)">
+      <h1>Ураа! 🎉</h1>
+      <p class="lead">Спасибо! Сейчас покажу сюрприз.</p>
+      <button class="yes" id="backBtn">Вернуться</button>
+    </div>
+  </div>
+
+<script>
+/* ===================== params ===================== */
+function getParam(n){ try{ const u=new URL(location.href); return u.searchParams.get(n)||'' }catch(e){return''} }
+const given = decodeURIComponent(getParam('name')||'');
+if(given) document.getElementById('name').textContent = given;
+
+/* ===================== hearts (SVG real hearts) ===================== */
+(function makeHearts(){
+  const container = document.getElementById('hearts');
+  const colors = ['#ffb7d1','#ffc6e0','#ff9bbd','#ffd7e6','#ff6b9d'];
+  const num = 12;
+  for(let i=0;i<num;i++){
+    const svgNS = "http://www.w3.org/2000/svg";
+    const wrapper = document.createElement('div');
+    wrapper.className = 'sheart';
+    const size = 36 + Math.random()*80; // 36..116
+    wrapper.style.width = size + 'px';
+    wrapper.style.height = size + 'px';
+    // start positions (below viewport so they float up)
+    wrapper.style.left = (Math.random()*92) + 'vw';
+    wrapper.style.top = (80 + Math.random()*30) + 'vh';
+    wrapper.style.opacity = (0.8 + Math.random()*0.2);
+    const dur = 6000 + Math.random()*9000; // 6s..15s
+    wrapper.style.animation = `heartFloat ${dur}ms linear ${Math.random()*-4000}ms forwards`;
+    // slight horizontal oscillation via CSS animation (applied to the inner SVG)
+    const svg = document.createElementNS(svgNS,'svg');
+    svg.setAttribute('viewBox','0 0 32 29');
+    svg.setAttribute('width','100%');
+    svg.setAttribute('height','100%');
+    svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+    // heart path (consistent, smooth)
+    const path = document.createElementNS(svgNS,'path');
+    path.setAttribute('d','M23.6 2.6c-2.3-2.1-5.9-2-8.1.2-0.4 0.4-0.7 0.9-0.9 1.4-0.2-0.5-0.5-1-0.9-1.4-2.2-2.2-5.8-2.3-8.1-0.2-2.6 2.3-2.6 6.2 0 8.5l8.9 8.1 8.9-8.1c2.6-2.3 2.6-6.2 0-8.5z');
+    path.setAttribute('fill', colors[Math.floor(Math.random()*colors.length)]);
+    svg.appendChild(path);
+    // tiny bobbing animation for each heart
+    svg.style.transformOrigin = 'center';
+    svg.style.display = 'block';
+    wrapper.appendChild(svg);
+    container.appendChild(wrapper);
+    // small horizontal drift applied via JS (to vary path)
+    const drift = (Math.random()*40 - 20);
+    svg.style.transition = `transform ${dur}ms linear`;
+    svg.style.transform = `translateX(${drift}px)`;
+  }
+})();
+
+/* ===================== NO button: now НЕ нажимаемая (убегает молниеносно) ===================== */
+(function impossibleNo(){
+  const btn = document.getElementById('btnNo');
+  const wrap = document.getElementById('mainWrap');
+  let translating = false;
+
+  // helper: get clamp bounds (we'll keep button inside wrap area)
+  function clampPosition(desiredCenterX, desiredCenterY, btnRect){
+    const parentRect = wrap.getBoundingClientRect();
+    const padding = 8;
+    const minX = parentRect.left + padding + btnRect.width/2;
+    const maxX = parentRect.right - padding - btnRect.width/2;
+    const minY = parentRect.top + padding + btnRect.height/2;
+    const maxY = parentRect.bottom - padding - btnRect.height/2;
+    const newCx = Math.min(maxX, Math.max(minX, desiredCenterX));
+    const newCy = Math.min(maxY, Math.max(minY, desiredCenterY));
+    return { cx:newCx, cy:newCy };
+  }
+
+  // compute and set transform so button center is at (cx,cy)
+  function setButtonCenter(cx, cy){
+    const br = btn.getBoundingClientRect();
+    const tx = cx - (br.left + br.width/2);
+    const ty = cy - (br.top + br.height/2);
+    btn.style.transition = 'transform 120ms cubic-bezier(.2,.9,.2,1)';
+    btn.style.transform = `translate(${tx}px, ${ty}px)`;
+  }
+
+  // move button quickly AWAY from (x,y)
+  function fleeFrom(x, y){
+    if(translating) return;
+    const br = btn.getBoundingClientRect();
+    const parentRect = wrap.getBoundingClientRect();
+    // direction vector from pointer to button center
+    const bx = br.left + br.width/2;
+    const by = br.top + br.height/2;
+    let dx = bx - x;
+    let dy = by - y;
+    const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+    dx /= dist; dy /= dist;
+    // choose a large push (so it's hard to click)
+    const push = 180 + Math.random()*160; // 180..340 px
+    let targetCx = bx + dx * push;
+    let targetCy = by + dy * (push * 0.5);
+    // clamp
+    const clamped = clampPosition(targetCx, targetCy, br);
+    // disable pointer events for a short moment to avoid accidental clicks
+    translating = true;
+    btn.style.pointerEvents = 'none';
+    setButtonCenter(clamped.cx, clamped.cy);
+    // after short delay, re-enable pointer events (but user will rarely catch it)
+    setTimeout(()=>{ btn.style.pointerEvents = ''; translating = false; }, 300);
+  }
+
+  // immediate flee when pointer is close
+  function onMove(e){
+    const x = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+    const y = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+    const br = btn.getBoundingClientRect();
+    const bx = br.left + br.width/2;
+    const by = br.top + br.height/2;
+    const dx = x - bx;
+    const dy = y - by;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const reactThreshold = 220; // larger zone -> will flee earlier
+    if(dist < reactThreshold){
+      fleeFrom(x,y);
+    }
+  }
+
+  // if user tries to press (pointerdown/touchstart) — immediately flee and prevent click
+  function onPointerDown(e){
+    e.preventDefault();
+    e.stopPropagation();
+    const x = e.clientX || (e.touches && e.touches[0] && e.touches[0].clientX) || (window.innerWidth/2);
+    const y = e.clientY || (e.touches && e.touches[0] && e.touches[0].clientY) || (window.innerHeight/2);
+    fleeFrom(x,y);
+  }
+
+  // guard click event (in case), just prevent
+  btn.addEventListener('click', function(ev){
+    ev.preventDefault();
+    ev.stopPropagation();
+    // playful bounce to show "не сегодня"
+    btn.animate([
+      { transform: btn.style.transform + ' scale(1)' },
+      { transform: btn.style.transform + ' scale(0.96)' },
+      { transform: btn.style.transform + ' scale(1)' }
+    ], { duration: 320, easing: 'ease-out' });
+  }, true);
+
+  window.addEventListener('mousemove', onMove, {passive:true});
+  window.addEventListener('touchmove', onMove, {passive:true});
+  btn.addEventListener('pointerdown', onPointerDown, {passive:false});
+  btn.addEventListener('touchstart', onPointerDown, {passive:false});
+  btn.addEventListener('mousedown', onPointerDown, {passive:false});
+})();
+
+/* ===================== YES button => page 2 ===================== */
+/* ===================== YES button => page 2 (confetti, banner, then navigate) ===================== */
+(function yesBehavior(){
+  const yes = document.getElementById('btnYes');
+  const mainWrap = document.getElementById('mainWrap');
+
+  if(!yes) return;
+
+  yes.addEventListener('click', ()=>{
+    // лёгкая анимация исчезновения главной карточки
+    mainWrap.style.transition = 'opacity .45s ease, transform .45s ease';
+    mainWrap.style.opacity = '0';
+    mainWrap.style.transform = 'scale(.98) translateY(-8px)';
+
+    // стартуем конфетти/сердца и показываем баннер
+    const DURATION = 3500; // ms — сколько держать эффект перед переходом
+    startConfetti(DURATION);
+    showBanner('Ура! 🎉');
+
+    // через DURATION + небольшой запас открываем страницу в новом окне
+    setTimeout(()=> {
+      window.open('html/page2.html', '_blank'); // Открывает в новой вкладке
+      
+      // Опционально: возвращаем видимость главной карточки, 
+      // чтобы страница не оставалась пустой после клика
+      mainWrap.style.opacity = '1';
+      mainWrap.style.transform = 'scale(1) translateY(0)';
+    }, DURATION + 300);
+  });
+
+  // Запуск конфетти (либо canvas-confetti, либо fallback сердечки)
+  function startConfetti(duration){
+    // если библиотека canvas-confetti загружена — делаем много выстрелов
+    if(window.confetti){
+      const end = Date.now() + duration;
+      (function frame(){
+        // делаем несколько партий с рандомным origin
+        window.confetti({
+          particleCount: 40,
+          startVelocity: 30 + Math.random()*20,
+          spread: 60 + Math.random()*120,
+          ticks: 120,
+          gravity: 0.6 + Math.random()*0.4,
+          origin: { x: Math.random(), y: Math.random() * 0.4 }
+        });
+        // периодичность — вызываем пока не пройдет время
+        if(Date.now() < end) requestAnimationFrame(frame);
+      })();
+      return;
+    }
+
+    // fallback: добавляем много "sheart" элементов (они используют существующую анимацию heartFloat)
+    const fallbackCount = 28;
+    const created = [];
+    for(let i=0;i<fallbackCount;i++){
+      const h = document.createElement('div');
+      h.className = 'sheart';
+      const size = 18 + Math.random()*60;
+      h.style.width = size + 'px';
+      h.style.height = size + 'px';
+      h.style.left = (10 + Math.random()*80) + 'vw';
+      // start near center-bottom for visible burst
+      h.style.top = (50 + Math.random()*30) + 'vh';
+      h.style.opacity = (0.8 + Math.random()*0.2);
+      const dur = 2000 + Math.random()*3000;
+      h.style.animation = `heartFloat ${dur}ms linear ${Math.random()*-800}ms forwards`;
+      // inner svg heart (same path as earlier)
+      h.innerHTML = '<svg viewBox="0 0 32 29" width="100%" height="100%"><path d="M23.6 2.6c-2.3-2.1-5.9-2-8.1.2-0.4 0.4-0.7 0.9-0.9 1.4-0.2-0.5-0.5-1-0.9-1.4-2.2-2.2-5.8-2.3-8.1-0.2-2.6 2.3-2.6 6.2 0 8.5l8.9 8.1 8.9-8.1c2.6-2.3 2.6-6.2 0-8.5z" fill="#ff6b9d"></path></svg>';
+      document.body.appendChild(h);
+      created.push(h);
+    }
+    // удалим fallback элементы чуть позже (после окончания эффекта)
+    setTimeout(()=> {
+      created.forEach(e => e.remove());
+    }, duration + 1200);
+  }
+
+  // Показываем временный баннер "Ура!"
+  function showBanner(text){
+    const id = 'celebrateBanner';
+    // не дублируем
+    if(document.getElementById(id)) return;
+    const b = document.createElement('div');
+    b.id = id;
+    b.textContent = text;
+    b.style.cssText = [
+      'position:fixed',
+      'left:50%',
+      'top:18%',
+      'transform:translateX(-50%) scale(0.98)',
+      'z-index:9999',
+      'padding:12px 22px',
+      'background:linear-gradient(90deg,#ff5fa0,#ff9cc8)',
+      'color:white',
+      'font-weight:800',
+      'font-size:20px',
+      'border-radius:999px',
+      'box-shadow:0 10px 30px rgba(0,0,0,0.18)',
+      'pointer-events:none',
+      'opacity:0',
+      'transition:opacity .25s ease, transform .35s cubic-bezier(.2,.9,.2,1)'
+    ].join(';');
+    document.body.appendChild(b);
+    // выходим в следующий кадр для перехода анимации
+    requestAnimationFrame(()=> {
+      b.style.opacity = '1';
+      b.style.transform = 'translateX(-50%) scale(1.03)';
+    });
+    // скрываем через примерно то же время, что и переход
+    setTimeout(()=> {
+      b.style.opacity = '0';
+      b.style.transform = 'translateX(-50%) scale(0.96)';
+      setTimeout(()=> b.remove(), 600);
+    }, durationForBanner());
+
+    function durationForBanner(){ return 3000; } // ms
+  }
+
+})();
+
+
+/* try load confetti lib (optional) */
+(function tryLoadConfetti(){
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js';
+  s.onload = ()=>{};
+  s.onerror = ()=>{};
+  document.head.appendChild(s);
+})();
+</script>
+
+
+</body>
+</html>

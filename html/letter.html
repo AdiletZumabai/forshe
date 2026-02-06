@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="../photobooth/сердце.png" type="image/x-icon">
+    <title>jaqsy</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #0f0c29; font-family: 'Segoe UI', sans-serif; }
+        canvas { display: block; }
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        #timer {
+            position: absolute; bottom: 10%; left: 5%;
+            font-size: 28px; color: #ff8fa3; font-weight: bold;
+            opacity: 0; transition: opacity 2s;
+            text-shadow: 0 0 10px rgba(255, 77, 109, 0.5);
+        }
+        #letter {
+            position: absolute; top: 10%; left: 5%;
+            width: 700px; padding: 25px;
+            max-height: 70vh; /* Ограничение по высоте, чтобы не ушло за экран */
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px; border-left: 5px solid #ff4d6d;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            color: #fff; line-height: 1.6; font-size: 18px;
+            opacity: 0; transform: translateX(-30px);
+            transition: all 2s ease-out;
+            scrollbar-width: thin; /* Тонкий скроллбар для аккуратности */
+            
+        }
+
+        #letter .signature {
+            text-align: left;
+            margin-top: 8px; /* дополнительный отступ сверху, если нужно */
+            display: block;
+        }
+
+        #fake-cursor { position: absolute; width: 25px; z-index: 100; pointer-events: none; filter: drop-shadow(0 0 5px white); }
+    </style>
+</head>
+<body>
+
+<img id="fake-cursor" src="https://cdn-icons-png.flaticon.com/512/33/33842.png" alt="cursor">
+<div id="ui-layer">
+    <div id="letter"></div>
+    <div id="timer">Біз бірге:<br><span id="time-val"></span></div>
+</div>
+<canvas id="canvas"></canvas>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const cursor = document.getElementById('fake-cursor');
+const letterBox = document.getElementById('letter');
+const timerBox = document.getElementById('timer');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const startDate = new Date('2024-07-25T00:35:00'); 
+const letterText = "Менің жаным❤️ Бүгінгі келіп жеткен 14 ақпан ғашықтар күнімен сені шын жүректен құттықтаймын!😘 Сенімен өткізген әр минут мен үшін ерекше өтеді. Сенің күлкін мені қуанышқа тербиді, сенің қолдауын мені көкке жетелейді, сенің тіпті маған қарағанын өзі бөлек сезім әкеледі. Есіндеме бір рет гүл жіберіп едімғой, хатымен бірге 'помни я рядом, если далеко' сол кез қазіргі сәтке әкеліп тұр. Осы сөздерді тағы қайталай келе мен тек сенін жанындамын, қаншама ара-қашықтық болсада бұл бізге кедергі бола алмайды, себебі біз оны өте аламыз!💖 Менің сезімім осы ағаштардын гүлдері сияқты, себебі күннен-күнге өсе береді, құлпырайды және де бітпейді. Ағаштын әр жүрегі сенін маған берген махаббатың. Тек сенің бар болғанына рахмет жаным. Сені қатты қатты жақсы көремін💗 <br><br>" +
+"<div class='signature'>Сенің сүйікті жігітің!<br>Қатты сағындыым🥺❤️</div>";
+
+let stage = 'intro'; 
+let progress = 0;
+let treeOffset = 0;
+let branches = [];
+let leaves = [];
+let fallingHearts = [];
+let stars = [];
+
+function initStars() {
+    for(let i = 0; i < 150; i++) {
+        stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height * 0.7,
+            size: Math.random() * 1.5,
+            blink: Math.random() * Math.PI
+        });
+    }
+}
+
+function drawBackground() {
+    let grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0, '#0f0c29');
+    grad.addColorStop(0.5, '#302b63');
+    grad.addColorStop(1, '#ff8fa3');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "white";
+    stars.forEach(s => {
+        s.blink += 0.02;
+        let opacity = 0.3 + Math.abs(Math.sin(s.blink)) * 0.7;
+        ctx.globalAlpha = opacity;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+}
+
+function drawHeart(x, y, size, color, alpha = 1) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = color;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.bezierCurveTo(x, y - size/2, x - size, y - size/2, x - size, y);
+    ctx.bezierCurveTo(x - size, y + size/2, x, y + size, x, y + size * 1.3);
+    ctx.bezierCurveTo(x, y + size, x + size, y + size/2, x + size, y);
+    ctx.bezierCurveTo(x, y + size, x + size, y + size/2, x + size, y);
+    ctx.bezierCurveTo(x + size, y - size/2, x, y - size/2, x, y);
+    ctx.fill();
+    ctx.restore();
+}
+
+function createBranches(startX, startY, len, angle, branchWidth, depth) {
+    if (depth > 1 && (startX > 130 || startX < -130)) return;
+    branches.push({ startX, startY, len, angle, width: branchWidth, depth: depth });
+    if (len < 18 || depth > 6) return;
+    const nextX = startX + Math.cos(angle) * len;
+    const nextY = startY + Math.sin(angle) * len;
+    createBranches(nextX, nextY, len * 0.72, angle - 0.28, branchWidth * 0.7, depth + 1);
+    createBranches(nextX, nextY, len * 0.72, angle + 0.28, branchWidth * 0.7, depth + 1);
+}
+
+function generateDenseLeaves() {
+    const totalLeaves = 650;
+    for (let i = 0; i < totalLeaves; i++) {
+        const t = Math.random() * Math.PI * 2;
+        const r = Math.sqrt(Math.random()); 
+        const xRaw = 16 * Math.pow(Math.sin(t), 3);
+        const yRaw = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+        leaves.push({
+            relX: xRaw * 14 * r, 
+            relY: yRaw * 14 * r - 290, 
+            size: Math.random() * 6 + 3,
+            color: ['#ff4d6d', '#ff758f', '#ff8fa3', '#ffccd5', '#ffffff'][Math.floor(Math.random()*5)],
+            phase: Math.random() * Math.PI * 2
+        });
+    }
+}
+
+function updateTimer() {
+    const diff = new Date() - startDate;
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff / 3600000) % 24);
+    const m = Math.floor((diff / 60000) % 60);
+    const s = Math.floor((diff / 1000) % 60);
+    document.getElementById('time-val').innerText = `${d}д ${h}ч ${m}м ${s}с`;
+}
+
+function animate() {
+    drawBackground();
+    const cx = canvas.width / 2;
+    const groundY = canvas.height * 0.85;
+
+    if (['grow', 'shift', 'final', 'line-grow'].includes(stage)) {
+        const lineP = (stage === 'line-grow') ? progress : 350;
+        ctx.strokeStyle = 'rgba(255, 77, 109, 0.6)';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(cx - lineP, groundY + 5);
+        ctx.lineTo(cx + lineP, groundY + 5);
+        ctx.stroke();
+    }
+
+    if (stage === 'intro') {
+        progress += 0.01;
+        cursor.style.left = (80 - 30 * progress) + '%';
+        cursor.style.top = (80 - 30 * progress) + '%';
+        drawHeart(cx, canvas.height/2, progress * 40, '#ff4d6d');
+        if (progress >= 1) { stage = 'transform'; progress = 0; cursor.style.display = 'none'; }
+    }
+
+    else if (stage === 'transform') {
+        progress += 0.02;
+        const curY = (canvas.height/2) + (groundY - (canvas.height/2)) * progress;
+        ctx.fillStyle = '#ff4d6d';
+        ctx.beginPath(); ctx.arc(cx, curY, 12, 0, Math.PI * 2); ctx.fill();
+        if (progress >= 1) { 
+            stage = 'line-grow'; progress = 0; 
+            createBranches(0, -10, 75, -Math.PI/2, 12, 0); 
+            generateDenseLeaves();
+        }
+    }
+
+    else if (stage === 'line-grow') {
+        progress += 7;
+        ctx.fillStyle = '#ff4d6d'; ctx.beginPath(); ctx.arc(cx, groundY, 12, 0, Math.PI * 2); ctx.fill();
+        if (progress > 350) { stage = 'grow'; progress = 0; }
+    }
+
+    else if (stage === 'grow' || stage === 'shift' || stage === 'final') {
+        if (stage === 'grow') progress += 0.005;
+        if (stage === 'shift') {
+            treeOffset += (canvas.width * 0.25 - treeOffset) * 0.02;
+            if (treeOffset > canvas.width * 0.24) { 
+                stage = 'final'; 
+                timerBox.style.opacity = 1; 
+                letterBox.style.opacity = 1; 
+                typeText(); 
+            }
+        }
+
+        ctx.save();
+        ctx.translate(cx + treeOffset, 0);
+
+        branches.forEach(b => {
+            const delay = b.depth * 0.08;
+            const bProgress = Math.min(1, Math.max(0, (progress - delay) * 6));
+            if (bProgress > 0) {
+                ctx.strokeStyle = '#3d2b1f';
+                ctx.lineWidth = b.width;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(b.startX, groundY + b.startY);
+                ctx.lineTo(b.startX + Math.cos(b.angle) * b.len * bProgress, groundY + b.startY + Math.sin(b.angle) * b.len * bProgress);
+                ctx.stroke();
+            }
+        });
+
+        if (progress > 0.7) {
+            const leafAlpha = Math.min(1, (progress - 0.7) * 4);
+            leaves.forEach(l => {
+                const pulse = Math.sin(Date.now() * 0.002 + l.phase) * 2;
+                drawHeart(l.relX, groundY + l.relY + pulse, l.size, l.color, leafAlpha);
+            });
+            if (progress >= 1 && stage === 'grow') { stage = 'shift'; }
+        }
+        ctx.restore();
+    }
+
+    if (stage === 'final') {
+        updateTimer();
+        // ГЕНЕРАЦИЯ: Шанс появления нового падающего сердечка каждый кадр
+        if (Math.random() < 0.08) { 
+            // Берем случайный лист из уже существующих, чтобы сердечко падало прямо из кроны
+            const sourceLeaf = leaves[Math.floor(Math.random() * leaves.length)];
+            fallingHearts.push({
+                x: cx + treeOffset + sourceLeaf.relX, 
+                y: groundY + sourceLeaf.relY, 
+                v: Math.random() * 1.5 + 0.5, // Скорость падения
+                s: Math.random() * 4 + 2,     // Размер
+                sin: Math.random() * Math.PI, // Фаза качания
+                alpha: 0.8
+            });
+        }
+
+        // ОБНОВЛЕНИЕ И ОТРИСОВКА:
+        fallingHearts.forEach((h, i) => {
+            h.y += h.v;             // Падает вниз
+            h.sin += 0.03;          // Качается влево-вправо
+            h.alpha -= 0.001;       // Постепенно исчезает
+            
+            // Рисуем с учетом горизонтального качания (Math.sin)
+            drawHeart(h.x + Math.sin(h.sin) * 15, h.y, h.s, '#ff4d6d', h.alpha);
+            
+            // Удаляем, если улетело за экран или совсем исчезло
+            if (h.y > canvas.height || h.alpha <= 0) fallingHearts.splice(i, 1);
+        });
+    }
+    requestAnimationFrame(animate);
+}
+
+let charIdx = 0;
+function typeText() {
+    const visibleHTML = letterText.slice(0, charIdx);
+    letterBox.innerHTML = visibleHTML;
+    charIdx++;
+
+    if (charIdx <= letterText.length) {
+        setTimeout(typeText, 40);
+    }
+}
+
+
+initStars();
+animate();
+
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    stars = [];
+    initStars();
+});
+</script>
+</body>
+</html>
